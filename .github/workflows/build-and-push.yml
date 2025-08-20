@@ -1,44 +1,31 @@
-name: Build and Push Multi-Arch Docker Image
+name: Build and Push Multiarch Docker Image
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Clonar el repositorio
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Configurar QEMU para multi-arquitectura
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: all
-
-      # 3️⃣ Configurar Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # 4️⃣ Loguearse en GHCR usando PAT
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }} # <-- Guardá tu PAT en los secrets del repo
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 5️⃣ Construir y publicar la imagen multi-arch
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/martinrodriguezbj/multiarch-alpine:latest
+          tags: ghcr.io/${{ github.repository_owner }}/miimagen:latest
